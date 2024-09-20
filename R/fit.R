@@ -86,10 +86,21 @@ fit.workflow <- function(object, data, ..., control = control_workflow()) {
 .should_inner_split <- function(workflow) {
   # todo: test this
   # todo: prefix with a dot for consistency with other workflows internals
-  has_postprocessor(workflow) &&
-  tailor::tailor_requires_fit(
-    extract_postprocessor(workflow, estimated = FALSE)
-  )
+  has_post <- has_postprocessor(workflow)
+
+  if (has_post) {
+    if (has_postprocessor_tailor(workflow)) {
+      use_inner_split <-
+        tailor::tailor_requires_fit(
+          extract_postprocessor(workflow, estimated = FALSE)
+        )
+    } else {
+      use_inner_split <- FALSE
+    }
+  } else {
+    use_inner_split <- FALSE
+  }
+  use_inner_split
 }
 
 make_inner_split <- function(object, data) {
@@ -199,7 +210,9 @@ make_inner_split <- function(object, data) {
 #' @rdname workflows-internals
 #' @export
 .fit_post <- function(workflow, data) {
+  # TODO this should be a loop over all postprocessors
   action_post <- workflow[["post"]][["actions"]][["tailor"]]
+  action_post <- workflow[["post"]][["actions"]][["applicability"]]
   fit(action_post, workflow = workflow, data = data)
 }
 

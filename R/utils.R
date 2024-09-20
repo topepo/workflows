@@ -116,10 +116,15 @@ has_fit <- function(x) {
 
 has_postprocessor <- function(x) {
   has_postprocessor_tailor(x)
+  has_postprocessor_applicability(x)
 }
 
 has_postprocessor_tailor <- function(x) {
   "tailor" %in% names(x$post$actions)
+}
+
+has_postprocessor_applicability <- function(x) {
+  "applicability" %in% names(x$post$actions)
 }
 
 has_blueprint <- function(x) {

@@ -62,17 +62,34 @@ predict.workflow <- function(object, new_data, type = NULL, opts = list(), ...) 
   fit <- extract_fit_parsnip(workflow)
   new_data <- forge_predictors(new_data, workflow)
 
-  if (!has_postprocessor(workflow)) {
-    return(predict(fit, new_data, type = type, opts = opts, ...))
+  # A tailor computes predictions so, if we have one, we don't need to call
+  # predict.model_fit. Otherwise we so and might append new columns to the
+  # model predictions.
+
+  if (has_postprocessor_tailor(workflow)) {
+    # use `augment()` rather than `fit()` to get all possible prediction `type`s.
+    # likely, we actually want tailor to check for the existence of needed
+    # columns at predict time and just use `predict()` output here.
+    fit_aug <- augment(fit, new_data, opts = opts, ...)
+
+    post <- extract_postprocessor(workflow)
+    predictions <- predict(post, fit_aug)[post$columns$estimate]
+  } else {
+    predictions <- predict(fit, new_data, type = type, opts = opts, ...)
   }
 
-  # use `augment()` rather than `fit()` to get all possible prediction `type`s.
-  # likely, we actually want tailor to check for the existence of needed
-  # columns at predict time and just use `predict()` output here.
-  fit_aug <- augment(fit, new_data, opts = opts, ...)
+  if (has_postprocessor_applicability(workflow)) {
+    # TODO this is currently structured in a way that there can be only
+    # fitted postprocessor
+    apd_pred <-  predict_applicability(workflow$post$fit, new_data)
+    # TODO use dplyr here?
+    predictions <- cbind(predictions, apd_pred)
+    if (!tibble::is_tibble(predictions)) {
+      predictions <- tibble::as_tibble(predictions)
+    }
+  }
 
-  post <- extract_postprocessor(workflow)
-  predict(post, fit_aug)[post$columns$estimate]
+  predictions
 }
 
 forge_predictors <- function(new_data, workflow) {

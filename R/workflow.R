@@ -109,10 +109,12 @@ add_postprocessor <- function(x, postprocessor, ..., call = caller_env()) {
 
   if (is_tailor(postprocessor)) {
     return(add_tailor(x, postprocessor))
+  } else if (is_applicability(postprocessor)) {
+    return(add_applicability(x, postprocessor))
   }
 
   cli_abort(
-    "{.arg postprocessor} must be a tailor.",
+    "{.arg postprocessor} must be a tailor or applicability object.",
     call = call
   )
 }
@@ -462,6 +464,9 @@ print_postprocessor <- function(x) {
 
   if (has_postprocessor_tailor(x)) {
     print_postprocessor_tailor(x)
+  }
+  if (has_postprocessor_applicability(x)) {
+    print_postprocessor_applicability(x)
   }
 
   invisible(x)

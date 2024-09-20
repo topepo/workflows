@@ -49,7 +49,7 @@ order_stage_fit <- function() {
 }
 
 order_stage_post <- function() {
-  "tailor"
+  c("tailor", "applicability")
 }
 
 # ------------------------------------------------------------------------------
@@ -121,6 +121,12 @@ is_action_fit <- function(x) {
 
 is_action_post <- function(x) {
   inherits(x, "action_post")
+}
+
+is_applicability <- function(x) {
+  # TODO add an issue in applicable for common class
+  cls <- paste0("apd_", apd_methods)
+  inherits(x, cls)
 }
 
 # ------------------------------------------------------------------------------
