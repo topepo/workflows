@@ -137,23 +137,24 @@ predict_applicability <- function(object, new_data, ...) {
   cl <- rlang::call2("score", .ns = "applicable", object = expr(object),
                      new_data = expr(new_data))
   predictions <- eval_tidy(cl)
+  apd_type <- class(object)[1]
 
   # The types of predictions do not have homogeneous names, so do some renaming
   rn_list <-
     list(
-      "pca" = list(applicability_score = "distance",
-                   applicability_percentile = "distance_pctl"),
-      "similarity" = list(applicability_score = "similarity",
-                          applicability_percentile = "similarity_pctl"),
-      "isolation" = list(applicability_score = "score",
-                          applicability_percentile = "score_pctl"),
-      "hat_values" = list(applicability_score = "hat_values",
-                         applicability_percentile = "hat_values_pctls")
+      "apd_pca" = list(applicability_score = "distance",
+                       applicability_percentile = "distance_pctl"),
+      "apd_similarity" = list(applicability_score = "similarity",
+                              applicability_percentile = "similarity_pctl"),
+      "apd_isolation" = list(applicability_score = "score",
+                             applicability_percentile = "score_pctl"),
+      "apd_hat_values" = list(applicability_score = "hat_values",
+                              applicability_percentile = "hat_values_pctls")
     )
   if (!tibble::is_tibble(predictions)) {
     predictions <- tibble::as_tibble(predictions)
   }
-  predictions <- dplyr::select(predictions, !!!rn_list[["pca"]])
+  predictions <- dplyr::select(predictions, !!!rn_list[[apd_type]])
 
   predictions
 }
